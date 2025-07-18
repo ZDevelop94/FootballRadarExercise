@@ -1,4 +1,6 @@
 val scala3Version = "3.7.1"
+import Dependencies.{testDep, *}
+import sbt.Keys.libraryDependencies
 
 lazy val root = project
   .in(file("."))
@@ -8,5 +10,5 @@ lazy val root = project
 
     scalaVersion := scala3Version,
 
-    libraryDependencies += "org.scalameta" %% "munit" % "1.0.0" % Test
+    libraryDependencies ++= testDep ++ dependencies
   )
