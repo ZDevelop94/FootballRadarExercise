@@ -1,24 +1,58 @@
 package service
 
-import domain.Match
+import cats.effect.IO
+import domain.{LeagueTable, Match}
 
 class MatchDaysCalcService {
 
-  def calculateMatches(matches: Vector[Int]) = {
+  def calculateTable(matches: Vector[Match]): IO[LeagueTable] = {
+    val distinctHomeTeams = matches.groupBy(_.homeTeam)
+    val distinctAwayTeams = matches.groupBy(_.awayTeam)
 
+    val allTeamsMatchesWon = distinctHomeTeams.map(calculateHomeGamesWon) ++ distinctAwayTeams.map(calculateAwayGamesWon)
+    val allTeamsMatchesLost = distinctHomeTeams.map(calculateHomeGamesLost) ++ distinctAwayTeams.map(calculateAwayGamesLost)
+    val allTeamsMatchesDrawn = distinctHomeTeams.map(calculateGamesDrawn) ++ distinctAwayTeams.map(calculateGamesDrawn)
 
+    ???
   }
 
-  private def calculateHomeGamesWon(teamName: String, matches: Vector[Match]): Int = {
+  private def calculateHomeGamesWon(teamName: String, matches: Vector[Match]): (String, Int) = {
+    (teamName,
+      matches.count { `match` =>
+        `match`.homeGoals > `match`.awayGoals
+      }
+    )
+  }
 
-    val gamesWon: Map[String, Vector[Match]] = matches.groupBy(_.homeTeam)
+  private def calculateAwayGamesWon(teamName: String, matches: Vector[Match]): (String, Int) = {
+    (teamName,
+      matches.count { `match` =>
+        `match`.awayGoals > `match`.homeGoals
+      }
+    )
+  }
 
-    val fulhamGamesWon = gamesWon.filter(_._1 == "Fulham")
+  private def calculateHomeGamesLost(teamName: String, matches: Vector[Match]): (String, Int) = {
+    (teamName,
+      matches.count { `match` =>
+        `match`.homeGoals < `match`.awayGoals
+      }
+    )
+  }
 
-    val matchesCollected = fulhamGamesWon.flatMap(_._2).toVector
+  private def calculateAwayGamesLost(teamName: String, matches: Vector[Match]): (String, Int) = {
+    (teamName,
+      matches.count { `match` =>
+        `match`.awayGoals < `match`.homeGoals
+      }
+    )
+  }
 
-    matchesCollected.map {
-      _.homeGoals
-    }.sum
+  private def calculateGamesDrawn(teamName: String, matches: Vector[Match]): (String, Int) = {
+    (teamName,
+      matches.count { `match` =>
+        `match`.homeGoals == `match`.awayGoals
+      }
+    )
   }
 }

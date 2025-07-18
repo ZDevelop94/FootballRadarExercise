@@ -10,7 +10,7 @@ class MatchDaysCalcServiceTest extends CatsEffectSuite {
   test("") {
     val teams = Vector(???)
     
-    val result: IO[LeagueTable] = service.calculateMatches(Vector.empty)
+    val result: IO[LeagueTable] = service.calculateTable(Vector.empty)
     val expections = Vector(
       
     )
