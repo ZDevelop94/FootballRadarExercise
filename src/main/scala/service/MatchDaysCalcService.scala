@@ -8,10 +8,10 @@ class MatchDaysCalcService {
   private lazy val homeGamesWon: Match => Boolean = `match` => `match`.homeGoals > `match`.awayGoals
   private lazy val awayGamesWon: Match => Boolean = `match` => `match`.homeGoals > `match`.awayGoals
 
-  lazy val homeGamesLost: Match => Boolean = `match` => `match`.homeGoals < `match`.awayGoals
-  lazy val awayGamesLost: Match => Boolean = `match` => `match`.awayGoals < `match`.homeGoals
+  private lazy val homeGamesLost: Match => Boolean = `match` => `match`.homeGoals < `match`.awayGoals
+  private lazy val awayGamesLost: Match => Boolean = `match` => `match`.awayGoals < `match`.homeGoals
 
-  lazy val gamesDrawn: Match => Boolean = `match` => `match`.homeGoals == `match`.awayGoals
+  private lazy val gamesDrawn: Match => Boolean = `match` => `match`.homeGoals == `match`.awayGoals
 
   def calculateTable(matches: Vector[Match]): IO[LeagueTable] = {
     val distinctHomeTeams = matches.groupBy(_.homeTeam)
@@ -25,7 +25,9 @@ class MatchDaysCalcService {
 
     val allTeamsMatchesLost = distinctHomeTeams.map { (teamName, matches) =>
       calculateGame(teamName, matches)(homeGamesLost)
-    } ++ distinctAwayTeams.map(calculateAwayGamesLost)
+    } ++ distinctAwayTeams.map { (teamName, matches) =>
+      calculateGame(teamName, matches)(awayGamesLost)
+    }
 
     val allTeamsMatchesDrawn = (distinctHomeTeams ++ distinctAwayTeams).map { (teamName, matches) =>
       calculateGame(teamName, matches)(gamesDrawn)
@@ -38,38 +40,6 @@ class MatchDaysCalcService {
     (teamName,
       matches.count { `match` =>
         `match`.homeGoals > `match`.awayGoals
-      }
-    )
-  }
-
-  private def calculateAwayGamesWon(teamName: String, matches: Vector[Match]): (String, Int) = {
-    (teamName,
-      matches.count { `match` =>
-        `match`.awayGoals > `match`.homeGoals
-      }
-    )
-  }
-
-  private def calculateHomeGamesLost(teamName: String, matches: Vector[Match]): (String, Int) = {
-    (teamName,
-      matches.count { `match` =>
-        `match`.homeGoals < `match`.awayGoals
-      }
-    )
-  }
-
-  private def calculateAwayGamesLost(teamName: String, matches: Vector[Match]): (String, Int) = {
-    (teamName,
-      matches.count { `match` =>
-        `match`.awayGoals < `match`.homeGoals
-      }
-    )
-  }
-
-  private def calculateGamesDrawn(teamName: String, matches: Vector[Match]): (String, Int) = {
-    (teamName,
-      matches.count { `match` =>
-        `match`.homeGoals == `match`.awayGoals
       }
     )
   }
