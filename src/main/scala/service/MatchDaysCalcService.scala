@@ -36,11 +36,7 @@ class MatchDaysCalcService {
     ???
   }
 
-  private def calculateGame(teamName: String, matches: Vector[Match])(f: Match => Boolean ): (String, Int) = {
-    (teamName,
-      matches.count { `match` =>
-        `match`.homeGoals > `match`.awayGoals
-      }
-    )
-  }
+  private def calculateGame(teamName: String, matches: Vector[Match])(f: Match => Boolean ): (String, Int) =
+    (teamName, matches.count(f))
+  
 }
